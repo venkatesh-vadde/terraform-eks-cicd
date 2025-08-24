@@ -1,10 +1,10 @@
-🚀 EKS Made Easy: Launch My Simple App in the Aws Cloud!
+Deploy simple python app in the EKS.
 
-Deploy your containerized application to a scalable Kubernetes cluster on AWS with fully automated infrastructure and delivery! 
+Deploy containerized application to a scalable Kubernetes cluster on AWS with fully automated infrastructure and delivery.
 
-✨ This project demonstrates an end-to-end DevOps pipeline using Terraform for infrastructure provisioning and GitHub Actions for CI/CD.
+This project demonstrates an end-to-end DevOps pipeline using Terraform for infrastructure provisioning and GitHub Actions for CI/CD.
 
-🏛️ Architecture
+Architecture
 The project is designed with a clear separation of concerns to be modular and scalable.
 
 Terraform Backend: Terraform state is stored securely in an S3 bucket with state locking managed by a DynamoDB table. This is a one-time bootstrap process.
@@ -15,39 +15,32 @@ Application & Deployment: A Python Flask app is containerized with Docker. A Git
 
 🛠️ Prerequisites
 Ensure you have the following tools installed and configured:
-
 AWS CLI
-
 Terraform (v1.5.0+)
-
 kubectl
-
 Docker
-
 Git
-
 A GitHub Account with a repository for this project.
 
-⚙️ Setup and Deployment
+Setup and Deployment
 Follow these steps in order to set up and deploy the project.
-
 1. Bootstrap the Terraform Backend
 First, provision the remote state storage on AWS.
 
-Bash
-
-cd backend-setup/
+```Bash
+cd modules/backend_setup/
 terraform init
 terraform apply -var-file="terraform.tfvars"
+```
 2. Provision the EKS Cluster
 Next, use the remote backend to provision all the core infrastructure.
 
-Bash
-
-cd ../terraform/
+```Bash
+cd ../.. 
 terraform init
 terraform plan -var-file="vars/dev.tfvars" -out="tfplan.out"
-terraform apply "tfplan.out"
+terraform apply -auto-approve "tfplan.out"
+```
 3. Configure GitHub Actions
 To enable the automated pipeline, set up an IAM role in AWS and update the workflow file.
 
@@ -62,22 +55,28 @@ Open .github/workflows/ci-cd.yml and replace the placeholder <YOUR_AWS_ACCOUNT_I
 4. Trigger the Pipeline
 Push your code to the main branch. The GitHub Actions pipeline will automatically build and deploy your application to EKS.
 
-Bash
-
+```Bash
 git add .
-git commit -m "feat: Initial project setup"
+git commit -m "Initial setup"
 git push origin main
+```
 🗑️ Cleanup
+
 To avoid ongoing AWS charges, destroy all resources when you're finished.
-
-From the terraform/ directory:
-
-Bash
-
-terraform destroy -var-file="vars/dev.tfvars"
+go to root dir where vars/dev.tfvars
+```bash
+terraform init
+terraform plan -destroy -var-file="vars/dev.tfvars" -out="tfplan.destroy.out"
+terraform apply -auto-approve "tfplan.destroy.out""
+```
 Then, from the backend-setup/ directory:
 
-Bash
-
-cd ../backend-setup/
-terraform destroy --var-file="terraform.tfvars"
+```Bash
+cd /backend-setup/
+terraform init
+terraform apply "tfplan.destroy.out"
+```
+if destroy will failed due to version run below command
+```bash
+aws s3 rm s3://"backendname" --recursive
+```
